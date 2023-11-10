@@ -11,7 +11,7 @@ const Toolbox = () => {
   const activeMenuItem = useSelector(
     (state: RootState) => state.menu.activeMenuItem
   );
-  const { color } = useSelector(
+  const { color, size } = useSelector(
     (state: RootState) => state.toolbox[activeMenuItem]
   );
 
@@ -61,6 +61,7 @@ const Toolbox = () => {
                 min={1}
                 max={10}
                 step={1}
+                value={size}
                 onChange={(e) => brushSizeHandler(e)}
               />
             </div>
