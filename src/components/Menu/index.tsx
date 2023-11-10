@@ -28,7 +28,15 @@ const Menu = () => {
   const dispatch = useDispatch();
 
   const handleMenuClick = (itemName: string) => {
-    dispatch(changeMenuItem(itemName));
+    if (
+      itemName === MENU_ITEMS.UNDO ||
+      itemName === MENU_ITEMS.REDO ||
+      itemName === MENU_ITEMS.DOWNLOAD
+    ) {
+      dispatch(actionItemClick(itemName));
+    } else {
+      dispatch(changeMenuItem(itemName));
+    }
   };
 
   return (

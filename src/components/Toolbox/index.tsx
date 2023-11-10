@@ -37,14 +37,17 @@ const Toolbox = () => {
             <h4 className={styles.toolText}>Brush Color</h4>
             <div className={styles.itemContainer}>
               {Object.values(COLORS).map((item: string, index) => (
-                <div
-                  key={index}
-                  className={cx(styles.colorBox, {
-                    [styles.active]: color === item,
-                  })}
-                  style={{ backgroundColor: item }}
-                  onClick={() => colorChangeHandler(item)}
-                />
+                <React.Fragment key={index}>
+                  {item !== "white" && (
+                    <div
+                      className={cx(styles.colorBox, {
+                        [styles.active]: color === item,
+                      })}
+                      style={{ backgroundColor: item }}
+                      onClick={() => colorChangeHandler(item)}
+                    />
+                  )}
+                </React.Fragment>
               ))}
             </div>
           </div>
