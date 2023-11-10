@@ -4,6 +4,7 @@ import { COLORS, MENU_ITEMS } from "@/constants/constants";
 import { changeColor, changeBrushSize } from "@/slice/toolboxSlice";
 import { RootState } from "@/store";
 import cx from "classnames";
+import { socketInstance } from "@/socket";
 import styles from "./index.module.css";
 
 const Toolbox = () => {
@@ -22,10 +23,12 @@ const Toolbox = () => {
 
   const brushSizeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(changeBrushSize({ item: activeMenuItem, size: e.target.value }));
+    socketInstance.emit("config", { color, size: e.target.value });
   };
 
   const colorChangeHandler = (newColor: string) => {
     dispatch(changeColor({ item: activeMenuItem, color: newColor }));
+    socketInstance.emit("config", { color: newColor, size });
   };
 
   return (

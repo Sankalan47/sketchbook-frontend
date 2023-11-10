@@ -5,6 +5,7 @@ import styles from "./index.module.css";
 import { RootState } from "@/store";
 import { MENU_ITEMS } from "@/constants/constants";
 import { actionItemClick } from "@/slice/menuSlice";
+import { socketInstance } from "@/socket";
 
 const Board = () => {
   const dispatch = useDispatch();
@@ -46,21 +47,35 @@ const Board = () => {
     const mouseDownHandler = (e: MouseEvent) => {
       shouldDrawRef.current = true;
       beginPath(e.clientX, e.clientY);
+      socketInstance.emit("beginPath", { x: e.clientX, y: e.clientY });
     };
     const mouseMoveHandler = (e: MouseEvent) => {
       if (!shouldDrawRef.current) return;
       drawLine(e.clientX, e.clientY);
+      socketInstance.emit("drawPath", { x: e.clientX, y: e.clientY });
     };
 
     canvas.addEventListener("mousedown", mouseDownHandler);
     canvas.addEventListener("mousemove", mouseMoveHandler);
     canvas.addEventListener("mouseup", mouseUpHandler);
 
+    const handleBeginPath = (path: { x: number; y: number }) => {
+      beginPath(path.x, path.y);
+    };
+    const handleDrawPath = (path: { x: number; y: number }) => {
+      drawLine(path.x, path.y);
+    };
+
+    socketInstance.on("beginPath", handleBeginPath);
+    socketInstance.on("drawPath", handleDrawPath);
+
     //remove listener on component unmount
     return () => {
       canvas.removeEventListener("mousedown", mouseDownHandler);
       canvas.removeEventListener("mousemove", mouseMoveHandler);
       canvas.removeEventListener("mouseup", mouseUpHandler);
+      socketInstance.off("beginPath", handleBeginPath);
+      socketInstance.off("drawPath", handleDrawPath);
     };
   }, []);
 
@@ -69,14 +84,22 @@ const Board = () => {
     const canvas: HTMLCanvasElement = canvasRef.current;
     const context = canvas.getContext("2d")!;
 
-    const changeCanvasConfig = () => {
+    const changeCanvasConfig = (color: string, size: number) => {
       color && (context.strokeStyle = color);
       size && (context.lineWidth = size);
     };
 
-    changeCanvasConfig();
+    color && changeCanvasConfig(color, size);
 
-    return () => {};
+    const handleChangeConfig = (config: { color: string; size: number }) => {
+      changeCanvasConfig(config.color, config.size);
+    };
+
+    socketInstance.on("config", handleChangeConfig);
+
+    return () => {
+      socketInstance.off("config", handleChangeConfig);
+    };
   }, [color, size]);
 
   useEffect(() => {
@@ -101,8 +124,10 @@ const Board = () => {
         actionMenuItem === MENU_ITEMS.REDO
       )
         historyPointerRef.current += 1;
-      const imageData = drawHistoryRef.current[historyPointerRef.current];
-      context.putImageData(imageData, 0, 0);
+      if (drawHistoryRef.current.length > 0) {
+        const imageData = drawHistoryRef.current[historyPointerRef.current];
+        context.putImageData(imageData, 0, 0);
+      }
     }
     dispatch(actionItemClick(null));
 
