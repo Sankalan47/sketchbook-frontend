@@ -1,12 +1,18 @@
 import React from "react";
-import { useSelector } from "react-redux";
-import styles from "./index.module.css";
+import { useSelector, useDispatch } from "react-redux";
 import { COLORS, MENU_ITEMS } from "@/constants/constants";
+import { changeColor, changeBrushSize } from "@/slice/toolboxSlice";
 import { RootState } from "@/store";
+import cx from "classnames";
+import styles from "./index.module.css";
 
 const Toolbox = () => {
+  const dispatch = useDispatch();
   const activeMenuItem = useSelector(
     (state: RootState) => state.menu.activeMenuItem
+  );
+  const { color } = useSelector(
+    (state: RootState) => state.toolbox[activeMenuItem]
   );
 
   const showStrokeToolOptions = activeMenuItem === MENU_ITEMS.PENCIL;
@@ -14,8 +20,12 @@ const Toolbox = () => {
     activeMenuItem === MENU_ITEMS.PENCIL ||
     activeMenuItem === MENU_ITEMS.ERASER;
 
-  const brushSizeHandler = () => {
-    console.log("brush size fn");
+  const brushSizeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(changeBrushSize({ item: activeMenuItem, size: e.target.value }));
+  };
+
+  const colorChangeHandler = (newColor: string) => {
+    dispatch(changeColor({ item: activeMenuItem, color: newColor }));
   };
 
   return (
@@ -29,8 +39,11 @@ const Toolbox = () => {
               {Object.values(COLORS).map((item: string, index) => (
                 <div
                   key={index}
-                  className={styles.colorBox}
+                  className={cx(styles.colorBox, {
+                    [styles.active]: color === item,
+                  })}
                   style={{ backgroundColor: item }}
+                  onClick={() => colorChangeHandler(item)}
                 />
               ))}
             </div>
@@ -48,7 +61,7 @@ const Toolbox = () => {
                 min={1}
                 max={10}
                 step={1}
-                onChange={brushSizeHandler}
+                onChange={(e) => brushSizeHandler(e)}
               />
             </div>
           </div>
