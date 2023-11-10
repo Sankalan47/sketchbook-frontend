@@ -1,4 +1,6 @@
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import cx from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPencil,
@@ -8,21 +10,38 @@ import {
   faFileArrowDown,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "./index.module.css";
-
+import { MENU_ITEMS } from "@/constants/constants";
+import { changeMenuItem, actionItemClick } from "@/slice/menuSlice";
+import { RootState } from "@/store";
 const Menu = () => {
   const icons = [
-    faPencil,
-    faEraser,
-    faRotateLeft,
-    faRotateRight,
-    faFileArrowDown,
+    { icon: faPencil, name: MENU_ITEMS.PENCIL },
+    { icon: faEraser, name: MENU_ITEMS.ERASER },
+    { icon: faRotateLeft, name: MENU_ITEMS.UNDO },
+    { icon: faRotateRight, name: MENU_ITEMS.REDO },
+    { icon: faFileArrowDown, name: MENU_ITEMS.DOWNLOAD },
   ];
+  const activeMenuItem = useSelector(
+    (state: RootState) => state.menu.activeMenuItem
+  );
+
+  const dispatch = useDispatch();
+
+  const handleMenuClick = (itemName: string) => {
+    dispatch(changeMenuItem(itemName));
+  };
 
   return (
     <div className={styles.menuContainer}>
       {icons.map((icon, index) => (
-        <div key={index} className={styles.iconWrapper}>
-          <FontAwesomeIcon icon={icon} className={styles.icon} />
+        <div
+          key={index}
+          className={cx(styles.iconWrapper, {
+            [styles.active]: activeMenuItem === icon.name,
+          })}
+          onClick={() => handleMenuClick(icon.name)}
+        >
+          <FontAwesomeIcon icon={icon.icon} className={styles.icon} />
         </div>
       ))}
     </div>
